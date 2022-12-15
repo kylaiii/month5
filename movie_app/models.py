@@ -33,7 +33,7 @@ class Movie(models.Model):
 
     def rating(self):
         lst = [review.stars for review in self.reviews.all()]
-        return sum(lst) / len(lst)
+        return (sum(lst) / len(lst)) if len(lst) != 0 else "No reviews yet"
 
 
 class Review(models.Model):
@@ -43,12 +43,16 @@ class Review(models.Model):
 
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     text = models.TextField(verbose_name='Текст')
-    stars = models.IntegerField(default=0, verbose_name='Рейтинг')
+    stars = models.IntegerField(default=5, verbose_name='Рейтинг', choices=((1, '*'),
+                                                                            (2, '**'),
+                                                                            (3, '***'),
+                                                                            (4, '****'),
+                                                                            (5, '*****'),))
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, verbose_name='Фильм', related_name='reviews')
 
     def __str__(self):
         if len(self.text) <= 50:
-            return (
-                self.author.username if self.author is not None else 'Anonymous') + ', ' + self.text + '; ' + self.movie.title
-        return (self.author.username if self.author is not None else 'Anonymous') + ', ' + self.text[
-                                                                                           0:50] + '...;  ' + self.movie.title
+            return (self.author.username if self.author is not None else 'Anonymous') + ', ' \
+                   + self.text + '; ' + self.movie.title
+        return (self.author.username if self.author is not None else 'Anonymous') + ', ' \
+               + self.text[0:50] + '...;  ' + self.movie.title

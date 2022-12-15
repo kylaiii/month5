@@ -2,11 +2,11 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('directors/', director_view),
-    path('directors/<int:id>/', director_detail_view),
-    path('movies/', movie_view),
-    path('movies/<int:id>/', movie_detail_view),
-    path('reviews/', review_view),
-    path('reviews/<int:id>/', review_detail_view),
+    path('directors/', DirectorListAPIView.as_view()),
+    path('directors/<int:pk>/', DirectorItemUpdateDestroyAPIView.as_view()),
+    path('movies/', MovieListAPIView.as_view()),
+    path('movies/<int:pk>/', MovieItemUpdateDestroyAPIView.as_view()),
+    path('reviews/', ReviewListAPIView.as_view()),
+    path('reviews/<int:pk>/', ReviewItemUpdateDestroyView.as_view()),
     path('movies/reviews/', movies_reviews_view)
 ]

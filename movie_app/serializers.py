@@ -33,8 +33,8 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = UserSimpleSerializer()
-    movie = MovieSerializer()
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    movie = serializers.PrimaryKeyRelatedField(queryset=Movie.objects.all())
 
     class Meta:
         model = Review
@@ -42,7 +42,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewOnMovieSerializer(serializers.ModelSerializer):
-    author = UserSimpleSerializer()
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Review
