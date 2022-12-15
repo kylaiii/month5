@@ -72,16 +72,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewValidateSerializer(serializers.Serializer):
-    author_id = serializers.IntegerField(required=True, min_value=1)
     text = serializers.CharField(min_length=10, required=True)
     stars = serializers.IntegerField(min_value=1, max_value=5, required=True)
     movie_id = serializers.IntegerField(min_value=1, required=True)
-
-    def validate_author_id(self, author_id):
-        author_exists = User.objects.filter(id=author_id).exists()
-        if author_exists:
-            return author_id
-        raise ValidationError('Пользователя с таким id не существует')
 
     def validate_movie_id(self, movie_id):
         movie_exists = Movie.objects.filter(id=movie_id).exists()

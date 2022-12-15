@@ -1,7 +1,7 @@
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import viewsets
 
 from .serializers import *
 from .models import *
@@ -10,6 +10,7 @@ from rest_framework import status
 
 # Create your views here.
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def director_view(request):
     if request.method == 'GET':
         directors = Director.objects.all()
@@ -28,6 +29,7 @@ def director_view(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def director_detail_view(request, **kwargs):
     try:
         director = Director.objects.get(id=kwargs['id'])
@@ -50,6 +52,7 @@ def director_detail_view(request, **kwargs):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def movie_view(request: Request):
     if request.method == 'GET':
         movies = Movie.objects.all()
@@ -70,6 +73,7 @@ def movie_view(request: Request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def movie_detail_view(request: Request, **kwargs):
     try:
         movie = Movie.objects.get(id=kwargs['id'])
@@ -100,22 +104,25 @@ def movie_detail_view(request: Request, **kwargs):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def review_view(request: Request):
     if request.method == 'GET':
-        reviews = Review.objects.all()
+        if request.user.is_anonymous:
+            reviews = Review.objects.all()
+        else:
+            reviews = Review.objects.filter(author=request.user)
         serializer = ReviewSerializer(reviews, many=True)
         return Response(data=serializer.data)
     if request.method == 'POST':
         serializer = ReviewValidateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        author_id = serializer.validated_data['author_id']
         text = serializer.validated_data['text']
         stars = serializer.validated_data['stars']
         movie_id = serializer.validated_data['movie_id']
 
         review = Review.objects.create(
-            author_id=author_id,
+            author=request.user,
             text=text,
             stars=stars,
             movie_id=movie_id
@@ -125,6 +132,7 @@ def review_view(request: Request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def review_detail_view(request, **kwargs):
     try:
         review = Review.objects.get(id=kwargs['id'])
@@ -158,6 +166,7 @@ def review_detail_view(request, **kwargs):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def movies_reviews_view(request):
     movies = Movie.objects.all()
     serializer = MoviesReviewsSerializer(movies, many=True)
