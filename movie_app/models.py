@@ -1,28 +1,54 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
 
+# Create your models here.
 class Director(models.Model):
-    name = models.CharField(max_length=100)
+    class Meta:
+        verbose_name = 'Режиссер'
+        verbose_name_plural = 'Режиссеры'
+
+    name = models.CharField(max_length=255, verbose_name='Имя')
 
     def __str__(self):
         return self.name
 
+    def movie_count(self):
+        return len(self.movies.all())
+
 
 class Movie(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    duration = models.DurationField()
-    director = models.ForeignKey(Director, on_delete=models.CASCADE, related_name='movies')
+    class Meta:
+        verbose_name = 'Фильм'
+        verbose_name_plural = 'Фильмы'
+
+    title = models.CharField(max_length=255, verbose_name='Название')
+    description = models.TextField(verbose_name='Описание')
+    duration = models.IntegerField(help_text='Длительность в минутах', verbose_name='Длительность')
+    director = models.ForeignKey(Director, on_delete=models.SET_DEFAULT, default='Неизвестно', verbose_name='Режиссер',
+                                 related_name='movies')
 
     def __str__(self):
         return self.title
 
+    def rating(self):
+        lst = [review.stars for review in self.reviews.all()]
+        return sum(lst) / len(lst)
+
+
 class Review(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews', null=True)
-    text = models.TextField()
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    text = models.TextField(verbose_name='Текст')
+    stars = models.IntegerField(default=0, verbose_name='Рейтинг')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, verbose_name='Фильм', related_name='reviews')
 
     def __str__(self):
-        return self.author.username + ' ' + self.text + ' ' + self.movie.title if self.author is not None else 'someone'
+        if len(self.text) <= 50:
+            return (
+                self.author.username if self.author is not None else 'Anonymous') + ', ' + self.text + '; ' + self.movie.title
+        return (self.author.username if self.author is not None else 'Anonymous') + ', ' + self.text[
+                                                                                           0:50] + '...;  ' + self.movie.title
